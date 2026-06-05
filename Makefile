@@ -6,7 +6,7 @@ CC		= cc
 
 SRCS	=	codexion.c \
 			parser.c \
-			#codex_utils.c \
+			codex_utils.c \
 
 
 OBJS	= $(SRCS:.c=.o)

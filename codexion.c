@@ -15,6 +15,14 @@ int main(int ac, char **av)
     sim->cfg.num_compiles_req = atoi(av[6]);
     sim->cfg.dongle_cooldown = atoi(av[7]);
     sim->cfg.scheduler = av[8];
+    sim->start_time = get_time_ms();
+    t_coder  *coder = malloc(sizeof(t_coder));
+    if (!coder)
+        return (1);
+    coder->id = 1;
+    // routine();
+    long long elapsed = get_time_ms() - sim->start_time;
+    printf("%lld %d is compiling\n", elapsed, coder->id);
     printf("num_coders: %d\n", sim->cfg.num_coders);
     printf("time_to_burnout: %d ms\n", sim->cfg.time_to_burnout);
     printf("time_to_compile: %d ms\n", sim->cfg.time_to_compile);

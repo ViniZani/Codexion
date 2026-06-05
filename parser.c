@@ -52,7 +52,7 @@ int parser_input(int ac, char **av)
         printf("%s", "Error: num_of_compiles must be a positive int");
         return (1);
     }
-    if (is_num(av[7]) != 0 || atoi(av[7]) <= 0)
+    if (is_num(av[7]) != 0 || atoi(av[7]) < 0)
     {
         printf("%s", "Error: dongle_cooldown must be a positive int");
         return (1);
