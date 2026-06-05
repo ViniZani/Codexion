@@ -2,29 +2,26 @@
 
 int main(int ac, char **av)
 {
-    if (ac != 9)
-    {
-        printf("%s", "Error: parameter must be exaclty 8");
+    if (parser_input(ac, av) == 1)
         return (1);
-    }
-    if (atoi(av[1]) <= 0)
-    {
-        printf("%s", "Error: num_coders must be a positive int");
+    t_sim  *sim = malloc(sizeof(t_sim));
+    if (!sim)
         return (1);
-    }
-        if (atoi(av[6]) <= 0)
-    {
-        printf("%s", "Error: num_of_compiles must be a positive int");
-        return (1);
-    }
-    int number_of_coders = atoi(av[1]);
-    //time_to_burnout = av[2];
-    //time_to_compile = av[3];
-    //time_to_debug = av[4];
-    //time_to_refactor = av[5];
-    int number_of_compiles_req = atoi(av[6]);
-    //dongle_cd = av[7];
-    //scheduler = av[8];
-    printf("deu certo o num_coders: %i", number_of_coders);
-    return number_of_coders;
+    sim->cfg.num_coders = atoi(av[1]);
+    sim->cfg.time_to_burnout = atoi(av[2]);
+    sim->cfg.time_to_compile = atoi(av[3]);
+    sim->cfg.time_to_debug = atoi(av[4]);
+    sim->cfg.time_to_refactor = atoi(av[5]);
+    sim->cfg.num_compiles_req = atoi(av[6]);
+    sim->cfg.dongle_cooldown = atoi(av[7]);
+    sim->cfg.scheduler = av[8];
+    printf("num_coders: %d\n", sim->cfg.num_coders);
+    printf("time_to_burnout: %d ms\n", sim->cfg.time_to_burnout);
+    printf("time_to_compile: %d ms\n", sim->cfg.time_to_compile);
+    printf("time_to_debug: %d ms\n", sim->cfg.time_to_debug);
+    printf("time_to_refactor: %d ms\n", sim->cfg.time_to_refactor);
+    printf("num_compiles_req: %d\n", sim->cfg.num_compiles_req);
+    printf("dongle_cooldown: %d ms\n", sim->cfg.dongle_cooldown);
+    printf("scheduler: %s\n", (sim->cfg.scheduler));
+    return (0);
 }
