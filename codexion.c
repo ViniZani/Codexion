@@ -1,5 +1,28 @@
 #include "codexion.h"
+void initialize_sim(t_sim *sim)
+{
+    int i;
 
+    sim->coders = malloc(sizeof(t_coder) * sim->cfg.num_coders);
+    if (!sim->coders)
+        return ;
+    sim->dongles = malloc(sizeof(t_dongle) * sim->cfg.num_coders);
+    if (!sim->dongles)
+        return ;
+    i = 0;
+    while (i < sim->cfg.num_coders)
+    {
+
+        sim->coders[i].id = i + 1;
+        sim->coders[i].compiles_done = 0;
+        sim->coders[i].last_compile_start = sim->start_time;
+        sim->coders[i].cfg = &sim->cfg;
+
+        sim->dongles[i].available = 1;
+        sim->dongles[i].cooldown_until = 0;
+        i++;
+    }
+}
 int main(int ac, char **av)
 {
     if (parser_input(ac, av) == 1)
@@ -16,13 +39,10 @@ int main(int ac, char **av)
     sim->cfg.dongle_cooldown = atoi(av[7]);
     sim->cfg.scheduler = av[8];
     sim->start_time = get_time_ms();
-    t_coder  *coder = malloc(sizeof(t_coder));
-    if (!coder)
-        return (1);
-    coder->id = 1;
+    initialize_sim(sim);
     // routine();
     long long elapsed = get_time_ms() - sim->start_time;
-    printf("%lld %d is compiling\n", elapsed, coder->id);
+    printf("%lld %d is compiling\n", elapsed, sim->coders->id);
     printf("num_coders: %d\n", sim->cfg.num_coders);
     printf("time_to_burnout: %d ms\n", sim->cfg.time_to_burnout);
     printf("time_to_compile: %d ms\n", sim->cfg.time_to_compile);
