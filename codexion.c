@@ -22,6 +22,9 @@ void initialize_sim(t_sim *sim)
         sim->dongles[i].cooldown_until = 0;
         i++;
     }
+    sim->coder_threads = malloc(sizeof(pthread_t) * sim->cfg.num_coders);
+    pthread_mutex_init(&sim->log_mutex, NULL);
+    sim->simulation_running = 1;
 }
 int main(int ac, char **av)
 {

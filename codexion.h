@@ -46,9 +46,9 @@ typedef struct s_sim
     t_config cfg;
     t_coder *coders;
     t_dongle *dongles;
-    //pthread_t *coder_threads;
-    //pthread_t monitor_thread;
-    //pthread_mutex_t log_mutex;
+    pthread_t *coder_threads;
+    pthread_t monitor_thread;
+    pthread_mutex_t log_mutex;
     int simulation_running;
     long long start_time;
     // Talvez um mutex para simulation_running
