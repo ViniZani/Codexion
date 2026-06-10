@@ -11,6 +11,55 @@
 /* ************************************************************************** */
 
 #include "codexion.h"
+void	launch_simulation(t_sim *sim)
+{
+	int	i;
+
+	i = 0;
+	while (i < sim->cfg.num_coders)
+	{
+		pthread_create(&sim->coder_threads[i], NULL,
+			coder_routine, &sim->coders[i]);
+		i++;
+	}
+	i = 0;
+	while (i < sim->cfg.num_coders)
+	{
+		pthread_join(sim->coder_threads[i], NULL);
+		i++;
+	}
+}
+
+void	take_dongle(t_dongle *dongle)
+{
+	pthread_mutex_lock(&dongle->mutex);
+	while (!dongle->available)
+	{
+		pthread_cond_wait(&dongle->cond, &dongle->mutex);
+	}
+	dongle->available = 0;
+	pthread_mutex_unlock(&dongle->mutex);
+}
+
+void	*coder_routine(void *arg)
+{
+	t_coder	*coder;
+
+	coder = (t_coder *)arg;
+	while (coder->sim->simulation_running)
+	{
+		// 1. pegar dongles
+		take_dongle(&coder->sim->dongles[coder->id]);
+		take_dongle(&coder->sim->dongles[(coder->id + 1)
+			% coder->cfg->num_coders]);
+		// 2. compilar (usleep)
+		// 3. soltar dongles
+		// 4. debugar (usleep)
+		// 5. refatorar (usleep)
+		// 6. incrementar compiles_done
+	}
+	return (NULL);
+}
 
 void	initialize_sim(t_sim *sim)
 {
@@ -31,6 +80,9 @@ void	initialize_sim(t_sim *sim)
 		sim->coders[i].cfg = &sim->cfg;
 		sim->dongles[i].available = 1;
 		sim->dongles[i].cooldown_until = 0;
+		sim->coders[i].sim = sim;
+		pthread_mutex_init(&sim->dongles[i].mutex, NULL);
+		pthread_cond_init(&sim->dongles[i].cond, NULL);
 		i++;
 	}
 	sim->coder_threads = malloc(sizeof(pthread_t) * sim->cfg.num_coders);
@@ -59,15 +111,17 @@ int	main(int ac, char **av)
 	sim->start_time = get_time_ms();
 	initialize_sim(sim);
 	elapsed = get_time_ms() - sim->start_time;
-    printf("%lld %d is compiling\n", elapsed, sim->coders->id);
-    printf("num_coders: %d\n", sim->cfg.num_coders);
-    printf("time_to_burnout: %d ms\n", sim->cfg.time_to_burnout);
-    printf("time_to_compile: %d ms\n", sim->cfg.time_to_compile);
-    printf("time_to_debug: %d ms\n", sim->cfg.time_to_debug);
-    printf("time_to_refactor: %d ms\n", sim->cfg.time_to_refactor);
-    printf("num_compiles_req: %d\n", sim->cfg.num_compiles_req);
-    printf("dongle_cooldown: %d ms\n", sim->cfg.dongle_cooldown);
-    printf("scheduler: %s\n", (sim->cfg.scheduler));
+	coder_routine(sim);
+	launch_simulation(sim);
 	return (0);
 }
-// routine();
+/*
+printf("%lld %d is compiling\n", elapsed, sim->coders->id);
+printf("num_coders: %d\n", sim->cfg.num_coders);
+printf("time_to_burnout: %d ms\n", sim->cfg.time_to_burnout);
+printf("time_to_compile: %d ms\n", sim->cfg.time_to_compile);
+printf("time_to_debug: %d ms\n", sim->cfg.time_to_debug);
+printf("time_to_refactor: %d ms\n", sim->cfg.time_to_refactor);
+printf("num_compiles_req: %d\n", sim->cfg.num_compiles_req);
+printf("dongle_cooldown: %d ms\n", sim->cfg.dongle_cooldown);
+printf("scheduler: %s\n", (sim->cfg.scheduler));*/
