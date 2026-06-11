@@ -22,7 +22,6 @@
 int						is_num(char *av);
 int						parser_input(int ac, char **av);
 long long				get_time_ms(void);
-void					*coder_routine(void *arg);
 
 typedef struct s_sim	t_sim;
 typedef struct s_config
@@ -70,4 +69,8 @@ typedef struct s_sim
 	// Mas como cada dongle tem sua fila, não precisa de scheduler global.
 }						t_sim;
 
+void					*coder_routine(void *arg);
+void					take_dongle(t_dongle *dongle);
+void					release_dongle(t_dongle *dongle);
+void					log_state(t_coder *coder, char *msg);
 #endif

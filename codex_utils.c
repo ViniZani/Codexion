@@ -19,3 +19,32 @@ long long	get_time_ms(void)
 	gettimeofday(&tv, NULL);
 	return (((long long)tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
+
+void	take_dongle(t_dongle *dongle)
+{
+	pthread_mutex_lock(&dongle->mutex);
+	while (!dongle->available)
+	{
+		pthread_cond_wait(&dongle->cond, &dongle->mutex);
+	}
+	dongle->available = 0;
+	pthread_mutex_unlock(&dongle->mutex);
+}
+
+void	release_dongle(t_dongle *dongle)
+{
+	pthread_mutex_lock(&dongle->mutex);
+	dongle->available = 1;
+	pthread_cond_broadcast(&dongle->cond);
+	pthread_mutex_unlock(&dongle->mutex);
+}
+
+void	log_state(t_coder *coder, char *msg)
+{
+	long long	elapsed;
+
+	elapsed = get_time_ms() - coder->sim->start_time;
+	pthread_mutex_lock(&coder->sim->log_mutex);
+	printf("%lld %d %s\n", elapsed, coder->id, msg);
+	pthread_mutex_unlock(&coder->sim->log_mutex);
+}

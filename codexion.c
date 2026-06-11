@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "codexion.h"
+
 void	launch_simulation(t_sim *sim)
 {
 	int	i;
@@ -18,8 +19,8 @@ void	launch_simulation(t_sim *sim)
 	i = 0;
 	while (i < sim->cfg.num_coders)
 	{
-		pthread_create(&sim->coder_threads[i], NULL,
-			coder_routine, &sim->coders[i]);
+		pthread_create(&sim->coder_threads[i], NULL, coder_routine,
+			&sim->coders[i]);
 		i++;
 	}
 	i = 0;
@@ -30,17 +31,6 @@ void	launch_simulation(t_sim *sim)
 	}
 }
 
-void	take_dongle(t_dongle *dongle)
-{
-	pthread_mutex_lock(&dongle->mutex);
-	while (!dongle->available)
-	{
-		pthread_cond_wait(&dongle->cond, &dongle->mutex);
-	}
-	dongle->available = 0;
-	pthread_mutex_unlock(&dongle->mutex);
-}
-
 void	*coder_routine(void *arg)
 {
 	t_coder	*coder;
@@ -49,14 +39,25 @@ void	*coder_routine(void *arg)
 	while (coder->sim->simulation_running)
 	{
 		// 1. pegar dongles
-		take_dongle(&coder->sim->dongles[coder->id]);
-		take_dongle(&coder->sim->dongles[(coder->id + 1)
-			% coder->cfg->num_coders]);
+		take_dongle(&coder->sim->dongles[coder->id - 1]);
+		log_state(coder, "has taken a dongle");
+		take_dongle(&coder->sim->dongles[(coder->id) % coder->cfg->num_coders]);
+		log_state(coder, "has taken a dongle");
 		// 2. compilar (usleep)
+		usleep(coder->cfg->time_to_compile * 1000);
+		log_state(coder, "is compiling");
 		// 3. soltar dongles
+		release_dongle(&coder->sim->dongles[coder->id - 1]);
+		release_dongle(&coder->sim->dongles[(coder->id)
+			% coder->cfg->num_coders]);
+		log_state(coder, "is debbugging");
 		// 4. debugar (usleep)
+		usleep(coder->cfg->time_to_debug * 1000);
+		log_state(coder, "is refactoring");
 		// 5. refatorar (usleep)
+		usleep(coder->cfg->time_to_refactor * 1000);
 		// 6. incrementar compiles_done
+		coder->compiles_done++;
 	}
 	return (NULL);
 }
@@ -90,10 +91,59 @@ void	initialize_sim(t_sim *sim)
 	sim->simulation_running = 1;
 }
 
-int	main(int ac, char **av)
+void	*monitor_routine(void *arg)
 {
 	t_sim		*sim;
+	int			i;
 	long long	elapsed;
+
+	sim = (t_sim *)arg;
+	while (1)
+	{
+		i = 0;
+		while (i < sim->cfg.num_coders)
+		{
+			// checa burnout
+			elapsed = get_time_ms() - sim->coders[i].last_compile_start;
+			if (elapsed > sim->cfg.time_to_burnout)
+			{
+				pthread_mutex_lock(&sim->log_mutex);
+				printf("%lld %d burned out\n", get_time_ms() - sim->start_time,
+					sim->coders[i].id);
+				pthread_mutex_unlock(&sim->log_mutex);
+				sim->simulation_running = 0;
+				return (NULL);
+			}
+			// checa se todos compilaram o suficiente
+			if (sim->coders[i].compiles_done >= sim->cfg.num_compiles_req)
+			{
+				int all_done = 1; // assume que todos terminaram
+				i = 0;
+				while (i < sim->cfg.num_coders)
+				{
+					if (sim->coders[i].compiles_done < sim->cfg.num_compiles_req)
+					{
+						all_done = 0; // achou um que não terminou
+						break ;
+					}
+					i++;
+				}
+				if (all_done)
+				{
+					sim->simulation_running = 0;
+					return (NULL);
+				}
+			}
+			i++;
+		}
+		usleep(1000);
+	}
+	return (NULL);
+}
+
+int	main(int ac, char **av)
+{
+	t_sim	*sim;
 
 	if (parser_input(ac, av) == 1)
 		return (1);
@@ -110,14 +160,10 @@ int	main(int ac, char **av)
 	sim->cfg.scheduler = av[8];
 	sim->start_time = get_time_ms();
 	initialize_sim(sim);
-	elapsed = get_time_ms() - sim->start_time;
-	coder_routine(sim);
 	launch_simulation(sim);
 	return (0);
 }
-/*
-printf("%lld %d is compiling\n", elapsed, sim->coders->id);
-printf("num_coders: %d\n", sim->cfg.num_coders);
+/*printf("num_coders: %d\n", sim->cfg.num_coders);
 printf("time_to_burnout: %d ms\n", sim->cfg.time_to_burnout);
 printf("time_to_compile: %d ms\n", sim->cfg.time_to_compile);
 printf("time_to_debug: %d ms\n", sim->cfg.time_to_debug);
