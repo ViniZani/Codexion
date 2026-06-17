@@ -159,5 +159,9 @@ int	main(int ac, char **av)
 	sim->start_time = get_time_ms();
 	initialize_sim(sim);
 	launch_simulation(sim);
+	free(sim->coders);
+	free(sim->dongles);
+	free(sim->coder_threads);
+	free(sim);
 	return (0);
 }
