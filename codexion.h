@@ -70,7 +70,8 @@ typedef struct s_sim
 }						t_sim;
 
 void					*coder_routine(void *arg);
-void					take_dongle(t_dongle *dongle);
+void					take_dongle(t_dongle *dongle, t_sim *sim);
 void					release_dongle(t_dongle *dongle);
 void					log_state(t_coder *coder, char *msg);
+int						sleep_checking(t_sim *sim, int ms);
 #endif

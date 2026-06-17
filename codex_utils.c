@@ -20,11 +20,16 @@ long long	get_time_ms(void)
 	return (((long long)tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
 
-void	take_dongle(t_dongle *dongle)
+void	take_dongle(t_dongle *dongle, t_sim *sim)
 {
 	pthread_mutex_lock(&dongle->mutex);
 	while (!dongle->available)
 	{
+		if (!sim->simulation_running)
+		{
+			pthread_mutex_unlock(&dongle->mutex);
+			return ;
+		}
 		pthread_cond_wait(&dongle->cond, &dongle->mutex);
 	}
 	dongle->available = 0;
@@ -47,4 +52,18 @@ void	log_state(t_coder *coder, char *msg)
 	pthread_mutex_lock(&coder->sim->log_mutex);
 	printf("%lld %d %s\n", elapsed, coder->id, msg);
 	pthread_mutex_unlock(&coder->sim->log_mutex);
+}
+int	sleep_checking(t_sim *sim, int ms)
+{
+	int	slept;
+
+	slept = 0;
+	while (slept < ms && sim->simulation_running)
+	{
+		usleep(1000);
+		slept++;
+	}
+	if (sim->simulation_running == 0)
+		return (1);
+	return(0);
 }
