@@ -14,9 +14,9 @@
 
 void	*monitor_routine(void *arg)
 {
-	t_sim	*sim;
-	int		i;
-	int		all_done;
+	t_sim		*sim;
+	int			i;
+	int			all_done;
 	long long	elapsed;
 
 	sim = (t_sim *)arg;
@@ -29,8 +29,8 @@ void	*monitor_routine(void *arg)
 			if (elapsed > sim->cfg.time_to_burnout)
 			{
 				pthread_mutex_lock(&sim->log_mutex);
-				printf("%lld %d burned out\n",
-					get_time_ms() - sim->start_time, sim->coders[i].id);
+				printf("%lld %d burned out\n", get_time_ms() - sim->start_time,
+					sim->coders[i].id);
 				pthread_mutex_unlock(&sim->log_mutex);
 				sim->simulation_running = 0;
 				return (NULL);
@@ -81,29 +81,33 @@ void	launch_simulation(t_sim *sim)
 void	*coder_routine(void *arg)
 {
 	t_coder	*coder;
-	t_sim *sim;
+	t_sim	*sim;
+	int		left;
+	int		right;
 
 	coder = (t_coder *)arg;
 	sim = (t_sim *)arg;
 	while (coder->sim->simulation_running)
 	{
-		take_dongle(&coder->sim->dongles[coder->id - 1], sim);
+		left = (coder->id + coder->cfg->num_coders - 1)
+			% coder->cfg->num_coders;
+		right = (coder->id + 1) % coder->cfg->num_coders;
+		take_dongle(&coder->sim->dongles[left], sim);
 		log_state(coder, "has taken a dongle");
-		take_dongle(&coder->sim->dongles[(coder->id) % coder->cfg->num_coders], sim);
+		take_dongle(&coder->sim->dongles[right], sim);
 		log_state(coder, "has taken a dongle");
 		coder->last_compile_start = get_time_ms();
 		log_state(coder, "is compiling");
 		if (!sleep_checking(coder->sim, coder->cfg->time_to_compile))
-    		break;
-		release_dongle(&coder->sim->dongles[coder->id - 1]);
-		release_dongle(&coder->sim->dongles[(coder->id)
-			% coder->cfg->num_coders]);
+			break ;
+		release_dongle(&coder->sim->dongles[left]);
+		release_dongle(&coder->sim->dongles[right]);
 		log_state(coder, "is debugging");
 		if (!sleep_checking(coder->sim, coder->cfg->time_to_compile))
-    		break;
+			break ;
 		log_state(coder, "is refactoring");
 		if (!sleep_checking(coder->sim, coder->cfg->time_to_compile))
-    		break;
+			break ;
 		coder->compiles_done++;
 	}
 	return (NULL);
@@ -137,7 +141,6 @@ void	initialize_sim(t_sim *sim)
 	pthread_mutex_init(&sim->log_mutex, NULL);
 	sim->simulation_running = 1;
 }
-
 
 int	main(int ac, char **av)
 {
