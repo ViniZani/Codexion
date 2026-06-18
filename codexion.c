@@ -86,22 +86,29 @@ void	*coder_routine(void *arg)
 	int		right;
 
 	coder = (t_coder *)arg;
-	sim = (t_sim *)arg;
+	sim = coder->sim;
 	while (coder->sim->simulation_running)
 	{
 		left = (coder->id + coder->cfg->num_coders - 1)
 			% coder->cfg->num_coders;
-		right = (coder->id + 1) % coder->cfg->num_coders;
-		take_dongle(&coder->sim->dongles[left], sim);
+		right = (coder->id) % coder->cfg->num_coders;
+		if (coder->id == sim->cfg.num_coders)
+		{
+			take_dongle(&coder->sim->dongles[right], sim);
+			take_dongle(&coder->sim->dongles[left], sim);
+		}
+		else{
+			take_dongle(&coder->sim->dongles[left], sim);
+			take_dongle(&coder->sim->dongles[right], sim);
+		}
 		log_state(coder, "has taken a dongle");
-		take_dongle(&coder->sim->dongles[right], sim);
 		log_state(coder, "has taken a dongle");
 		coder->last_compile_start = get_time_ms();
 		log_state(coder, "is compiling");
 		if (!sleep_checking(coder->sim, coder->cfg->time_to_compile))
 			break ;
-		release_dongle(&coder->sim->dongles[left]);
-		release_dongle(&coder->sim->dongles[right]);
+		release_dongle(&coder->sim->dongles[left], &sim->cfg);
+		release_dongle(&coder->sim->dongles[right], &sim->cfg);
 		log_state(coder, "is debugging");
 		if (!sleep_checking(coder->sim, coder->cfg->time_to_compile))
 			break ;

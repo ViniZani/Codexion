@@ -68,10 +68,10 @@ typedef struct s_sim
 	// Estruturas para o scheduler global?
 	// Mas como cada dongle tem sua fila, não precisa de scheduler global.
 }						t_sim;
-
 void					*coder_routine(void *arg);
 void					take_dongle(t_dongle *dongle, t_sim *sim);
-void					release_dongle(t_dongle *dongle);
+void					release_dongle(t_dongle *dongle, t_config *cfg);
 void					log_state(t_coder *coder, char *msg);
 int						sleep_checking(t_sim *sim, int ms);
+struct timespec ms_to_timespec(long ms_from_now);
 #endif
