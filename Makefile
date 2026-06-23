@@ -1,6 +1,6 @@
 NAME	= codexion
 
-CFLAGS	= -Wall -Werror -Wextra -g -Ilibft
+CFLAGS	= -Wall -Werror -Wextra -pthread
 CC		= cc
 
 
