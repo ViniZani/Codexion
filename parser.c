@@ -50,3 +50,20 @@ int	parser_input(int ac, char **av)
 		return (printf("Error: scheduler must be 'fifo' or 'edf'\n"), 1);
 	return (0);
 }
+
+void	cleanup_sim(t_sim *sim)
+{
+	int	i;
+
+	i = 0;
+	while (i < sim->cfg.num_coders)
+	{
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		i++;
+	}
+	pthread_mutex_destroy(&sim->log_mutex);
+	free(sim->coders);
+	free(sim->dongles);
+	free(sim->coder_threads);
+}

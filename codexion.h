@@ -64,14 +64,12 @@ typedef struct s_sim
 	pthread_mutex_t		log_mutex;
 	int					simulation_running;
 	long long			start_time;
-	// Talvez um mutex para simulation_running
-	// Estruturas para o scheduler global?
-	// Mas como cada dongle tem sua fila, não precisa de scheduler global.
 }						t_sim;
 void					*coder_routine(void *arg);
 void					take_dongle(t_dongle *dongle, t_sim *sim);
 void					release_dongle(t_dongle *dongle, t_config *cfg);
 void					log_state(t_coder *coder, char *msg);
 int						sleep_checking(t_sim *sim, int ms);
-struct timespec ms_to_timespec(long ms_from_now);
+struct timespec			ms_to_timespec(long ms_from_now);
+void					cleanup_sim(t_sim *sim);
 #endif

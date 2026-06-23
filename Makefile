@@ -6,6 +6,7 @@ CC		= cc
 
 SRCS	=	codexion.c \
 			parser.c \
+			rotine.c \
 			codex_utils.c \
 
 

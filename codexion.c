@@ -36,10 +36,10 @@ void	*monitor_routine(void *arg)
 				i = 0;
 				while (i < sim->cfg.num_coders)
 				{
-				    pthread_mutex_lock(&sim->dongles[i].mutex);
-				    pthread_cond_broadcast(&sim->dongles[i].cond);
-				    pthread_mutex_unlock(&sim->dongles[i].mutex);
-				    i++;
+					pthread_mutex_lock(&sim->dongles[i].mutex);
+					pthread_cond_broadcast(&sim->dongles[i].cond);
+					pthread_mutex_unlock(&sim->dongles[i].mutex);
+					i++;
 				}
 				return (NULL);
 			}
@@ -62,10 +62,10 @@ void	*monitor_routine(void *arg)
 			i = 0;
 			while (i < sim->cfg.num_coders)
 			{
-			    pthread_mutex_lock(&sim->dongles[i].mutex);
-			    pthread_cond_broadcast(&sim->dongles[i].cond);
-			    pthread_mutex_unlock(&sim->dongles[i].mutex);
-			    i++;
+				pthread_mutex_lock(&sim->dongles[i].mutex);
+				pthread_cond_broadcast(&sim->dongles[i].cond);
+				pthread_mutex_unlock(&sim->dongles[i].mutex);
+				i++;
 			}
 			return (NULL);
 		}
@@ -73,6 +73,7 @@ void	*monitor_routine(void *arg)
 	}
 	return (NULL);
 }
+
 void	launch_simulation(t_sim *sim)
 {
 	int	i;
@@ -113,12 +114,13 @@ void	*coder_routine(void *arg)
 			take_dongle(&coder->sim->dongles[right], sim);
 			take_dongle(&coder->sim->dongles[left], sim);
 		}
-		else{
+		else
+		{
 			take_dongle(&coder->sim->dongles[left], sim);
 			take_dongle(&coder->sim->dongles[right], sim);
 		}
 		if (!sim->simulation_running)
-    		break ;
+			break ;
 		log_state(coder, "has taken a dongle");
 		log_state(coder, "has taken a dongle");
 		coder->last_compile_start = get_time_ms();
@@ -163,6 +165,8 @@ void	initialize_sim(t_sim *sim)
 		i++;
 	}
 	sim->coder_threads = malloc(sizeof(pthread_t) * sim->cfg.num_coders);
+	if (!sim->coder_threads)
+		return ;
 	pthread_mutex_init(&sim->log_mutex, NULL);
 	sim->simulation_running = 1;
 }
@@ -187,9 +191,7 @@ int	main(int ac, char **av)
 	sim->start_time = get_time_ms();
 	initialize_sim(sim);
 	launch_simulation(sim);
-	free(sim->coders);
-	free(sim->dongles);
-	free(sim->coder_threads);
+	cleanup_sim(sim);
 	free(sim);
 	return (0);
 }
