@@ -54,6 +54,11 @@ void	take_dongle(t_dongle *dongle, t_sim *sim)
 			pthread_cond_wait(&dongle->cond, &dongle->mutex);
 		}
 	}
+	    if (!sim->simulation_running)
+    {
+        pthread_mutex_unlock(&dongle->mutex);
+        return ;
+    }
 	dongle->available = 0;
 	pthread_mutex_unlock(&dongle->mutex);
 }

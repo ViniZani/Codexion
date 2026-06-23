@@ -33,6 +33,14 @@ void	*monitor_routine(void *arg)
 					sim->coders[i].id);
 				pthread_mutex_unlock(&sim->log_mutex);
 				sim->simulation_running = 0;
+				i = 0;
+				while (i < sim->cfg.num_coders)
+				{
+				    pthread_mutex_lock(&sim->dongles[i].mutex);
+				    pthread_cond_broadcast(&sim->dongles[i].cond);
+				    pthread_mutex_unlock(&sim->dongles[i].mutex);
+				    i++;
+				}
 				return (NULL);
 			}
 			i++;
@@ -51,6 +59,14 @@ void	*monitor_routine(void *arg)
 		if (all_done)
 		{
 			sim->simulation_running = 0;
+			i = 0;
+			while (i < sim->cfg.num_coders)
+			{
+			    pthread_mutex_lock(&sim->dongles[i].mutex);
+			    pthread_cond_broadcast(&sim->dongles[i].cond);
+			    pthread_mutex_unlock(&sim->dongles[i].mutex);
+			    i++;
+			}
 			return (NULL);
 		}
 		usleep(1000);
@@ -101,6 +117,8 @@ void	*coder_routine(void *arg)
 			take_dongle(&coder->sim->dongles[left], sim);
 			take_dongle(&coder->sim->dongles[right], sim);
 		}
+		if (!sim->simulation_running)
+    		break ;
 		log_state(coder, "has taken a dongle");
 		log_state(coder, "has taken a dongle");
 		coder->last_compile_start = get_time_ms();
