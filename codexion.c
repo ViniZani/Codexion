@@ -162,6 +162,8 @@ void	initialize_sim(t_sim *sim)
 		sim->coders[i].sim = sim;
 		pthread_mutex_init(&sim->dongles[i].mutex, NULL);
 		pthread_cond_init(&sim->dongles[i].cond, NULL);
+		pthread_cond_init(&sim->coders[i].wait_cond, NULL);
+		sim->dongles[i].queue_size = 0;
 		i++;
 	}
 	sim->coder_threads = malloc(sizeof(pthread_t) * sim->cfg.num_coders);

@@ -33,9 +33,13 @@ To run this program, you will need pass necessarily 8 parameters:
 ```
 ### Blocking cases handled
 #### 1.Deadlock
+Deadlock — como você evitou o ciclo de espera circular entre os coders (lembra o que você implementou na coder_routine pra quebrar a simetria?)
+Starvation — como você garante que nenhum coder fica esperando indefinidamente (o burnout detection trata isso)
 The main comcept and the main challenger. The Deadlock occurs when 
 ### Thread synchronization mechanisms
-
+Cooldown — como você garante que um dongle não é pego antes do cooldown acabar (o timedwait)
+Burnout detection — como o monitor detecta precisamente quando um coder passou do prazo
+Log serialization — como você garante que as mensagens não se misturam no terminal
 
 ## Resources
 - Wikipedia: Dijskra Algorithm

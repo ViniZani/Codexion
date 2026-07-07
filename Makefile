@@ -8,6 +8,7 @@ SRCS	=	codexion.c \
 			parser.c \
 			rotine.c \
 			codex_utils.c \
+			schedule.c \
 
 
 OBJS	= $(SRCS:.c=.o)

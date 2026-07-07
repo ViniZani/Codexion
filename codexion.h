@@ -42,6 +42,8 @@ typedef struct s_dongle
 	pthread_cond_t		cond;
 	int					available;
 	long long			cooldown_until;
+	t_coder		*queue[64];
+	int			queue_size;
 }						t_dongle;
 
 typedef struct s_coder
@@ -52,6 +54,7 @@ typedef struct s_coder
 	t_config			*cfg;
 	t_sim				*sim;
 	t_dongle			*dongle;
+	pthread_cond_t	wait_cond;
 }						t_coder;
 
 typedef struct s_sim
@@ -72,4 +75,8 @@ void					log_state(t_coder *coder, char *msg);
 int						sleep_checking(t_sim *sim, int ms);
 struct timespec			ms_to_timespec(long ms_from_now);
 void					cleanup_sim(t_sim *sim);
+void	fifo_enqueue(t_dongle *dongle, t_coder *coder);
+t_coder	*fifo_dequeue(t_dongle *dongle);
+void	edf_enqueue(t_dongle *dongle, t_coder *coder);
+t_coder	*edf_dequeue(t_dongle *dongle);
 #endif

@@ -63,6 +63,7 @@ void	cleanup_sim(t_sim *sim)
 		i++;
 	}
 	pthread_mutex_destroy(&sim->log_mutex);
+	pthread_cond_destroy(&sim->coders[i].wait_cond);
 	free(sim->coders);
 	free(sim->dongles);
 	free(sim->coder_threads);
