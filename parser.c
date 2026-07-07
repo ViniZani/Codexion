@@ -46,8 +46,11 @@ int	parser_input(int ac, char **av)
 	}
 	if (is_num(av[7]) || atoi(av[7]) < 0)
 		return (printf("Error: dongle_cooldown must be a positive int\n"), 1);
-	if (strcmp(av[8], "fifo") && strcmp(av[8], "edf"))
-		return (printf("Error: scheduler must be 'fifo' or 'edf'\n"), 1);
+	if (strcmp(av[8], "fifo") != 0 && strcmp(av[8], "edf") != 0)
+	{
+		printf("Scheduler must be 'fifo' or 'edf'\n");
+		return (1);
+	}
 	return (0);
 }
 

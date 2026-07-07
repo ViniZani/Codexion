@@ -12,12 +12,14 @@
 
 #include "codexion.h"
 
-void	take_dongle(t_dongle *dongle, t_sim *sim)
+void	take_dongle(t_dongle *dongle, t_sim *sim, t_coder *coder)
 {
 	struct timespec	ts;
 
 	pthread_mutex_lock(&dongle->mutex);
-	while (!dongle->available || get_time_ms() < dongle->cooldown_until)
+	enqueue(dongle, coder, sim->cfg.scheduler);
+	while (!dongle->available || get_time_ms() < dongle->cooldown_until
+		|| dongle->queue[0] != coder)
 	{
 		if (!sim->simulation_running)
 		{
@@ -27,19 +29,17 @@ void	take_dongle(t_dongle *dongle, t_sim *sim)
 		if (get_time_ms() < dongle->cooldown_until)
 		{
 			ts = ms_to_timespec(dongle->cooldown_until - get_time_ms());
-			pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &ts);
+			pthread_cond_timedwait(&coder->wait_cond, &dongle->mutex, &ts);
 		}
 		else
-		{
-			pthread_cond_wait(&dongle->cond, &dongle->mutex);
-		}
+			pthread_cond_wait(&coder->wait_cond, &dongle->mutex);
 	}
 	if (!sim->simulation_running)
 	{
 		pthread_mutex_unlock(&dongle->mutex);
 		return ;
 	}
-	dongle->available = 0;
+	dequeue(dongle, sim->cfg.scheduler);
 	pthread_mutex_unlock(&dongle->mutex);
 }
 

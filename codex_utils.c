@@ -35,3 +35,19 @@ long long	get_time_ms(void)
 	gettimeofday(&tv, NULL);
 	return (((long long)tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
+
+void	enqueue(t_dongle *dongle, t_coder *coder, int scheduler)
+{
+	if (scheduler == 0)
+		fifo_enqueue(dongle, coder);
+	else
+		edf_enqueue(dongle, coder);
+}
+
+void	dequeue(t_dongle *dongle, int scheduler)
+{
+	if (scheduler == 0)
+		fifo_dequeue(dongle);
+	else
+		edf_dequeue(dongle);
+}

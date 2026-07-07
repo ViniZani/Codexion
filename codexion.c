@@ -111,13 +111,13 @@ void	*coder_routine(void *arg)
 		right = (coder->id) % coder->cfg->num_coders;
 		if (coder->id == sim->cfg.num_coders)
 		{
-			take_dongle(&coder->sim->dongles[right], sim);
-			take_dongle(&coder->sim->dongles[left], sim);
+			take_dongle(&coder->sim->dongles[right], sim, coder);
+			take_dongle(&coder->sim->dongles[left], sim, coder);
 		}
 		else
 		{
-			take_dongle(&coder->sim->dongles[left], sim);
-			take_dongle(&coder->sim->dongles[right], sim);
+			take_dongle(&coder->sim->dongles[left], sim, coder);
+			take_dongle(&coder->sim->dongles[right], sim, coder);
 		}
 		if (!sim->simulation_running)
 			break ;
@@ -189,7 +189,10 @@ int	main(int ac, char **av)
 	sim->cfg.time_to_refactor = atoi(av[5]);
 	sim->cfg.num_compiles_req = atoi(av[6]);
 	sim->cfg.dongle_cooldown = atoi(av[7]);
-	sim->cfg.scheduler = av[8];
+	if (strcmp(av[8], "fifo") == 0)
+		sim->cfg.scheduler = 0;
+	else if (strcmp(av[8], "edf") == 0)
+		sim->cfg.scheduler = 1;
 	sim->start_time = get_time_ms();
 	initialize_sim(sim);
 	launch_simulation(sim);
